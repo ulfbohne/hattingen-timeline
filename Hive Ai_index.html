@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio-Chronik</title>
+<style>
+  :root{--paper:#fbfaf7;--ink:#1f2024;--soft:#54565c;--muted:#8a8a8a;--line:#e7e3da;
+    --honey:#e8a317;--honey-deep:#c8841a;--charcoal:#23262b;--card:#fff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .ibanner{background:var(--charcoal);color:#f3efe6;text-align:center;font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:7px;font-weight:700}
+  .ibanner span{color:var(--honey)}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px 80px}
+  .cover{padding:46px 0 8px}
+  .crest{display:flex;align-items:center;gap:13px;margin-bottom:22px}
+  .hex{width:42px;height:42px}
+  .crest .co{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--charcoal);font-weight:700}
+  .crest .cs{font-size:11px;letter-spacing:.13em;color:var(--honey-deep);font-weight:600;margin-top:3px}
+  .cover h1{font-family:Georgia,"Times New Roman",serif;font-size:40px;line-height:1.05;font-weight:700;letter-spacing:-.01em}
+  .cover .lede{margin-top:13px;font-size:15px;color:var(--soft);font-weight:300;max-width:580px}
+  .controls{position:sticky;top:0;z-index:30;background:var(--paper);padding:16px 0 12px;border-bottom:1px solid var(--line);margin-top:22px}
+  .filtrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .filtrow+.filtrow{margin-top:9px}
+  .flabel{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-right:4px}
+  .chip{border:1px solid var(--line);background:#fff;color:var(--soft);border-radius:999px;padding:6px 13px;font-size:13px;cursor:pointer;font-weight:600;font-family:inherit}
+  .chip.on{background:var(--charcoal);color:#fff;border-color:var(--charcoal)}
+  .chip.cat.on{background:var(--c);border-color:var(--c)}
+  .addbtn{margin-left:auto;border:none;background:var(--honey);color:#23262b;font-weight:700;border-radius:999px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit}
+  .addbtn:hover{background:var(--honey-deep);color:#fff}
+  .hint{margin-top:14px;font-size:12.5px;color:var(--muted);background:#f3efe6;border-radius:8px;padding:9px 13px}
+  .tl{position:relative;margin-top:24px;padding-left:30px}
+  .tl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .item{position:relative;margin-bottom:18px}
+  .dot{position:absolute;left:-29px;top:20px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--c)}
+  .card{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .date{font-size:13px;font-weight:700;color:var(--charcoal);background:#f3efe6;border-radius:5px;padding:3px 9px}
+  .tag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--c);background:var(--cbg);border-radius:5px;padding:3px 9px}
+  .unit{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em}
+  .card h3{font-size:16.5px;margin-top:9px;font-weight:700;line-height:1.25}
+  .card .txt{margin-top:6px;font-size:14px;color:var(--soft)}
+  .state{text-align:center;color:var(--muted);padding:48px 20px;font-size:15px}
+  footer{margin-top:42px;border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  footer .fl{font-size:12px;color:var(--honey-deep);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+  footer .fr{font-size:11px;color:var(--muted);text-align:right}
+  .ov{position:fixed;inset:0;background:rgba(20,20,22,.45);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 16px;overflow:auto}
+  .ov.show{display:flex}
+  .modal{background:#fff;border-radius:14px;width:100%;max-width:520px;padding:24px}
+  .modal h2{font-size:19px;margin-bottom:6px}
+  .modal .msub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .fg{margin-bottom:13px}
+  .fg label{display:block;font-size:12px;font-weight:700;color:var(--soft);margin-bottom:5px}
+  .fg input,.fg select,.fg textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;background:#fff}
+  .fg textarea{min-height:64px;resize:vertical}
+  .fg.row2{display:flex;gap:12px}.fg.row2>div{flex:1}
+  .macts{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+  .btn{border:none;border-radius:8px;padding:9px 17px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn.cancel{background:#eee;color:#444}.btn.save{background:var(--charcoal);color:#fff}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--charcoal);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:200;display:none;max-width:90%}
+  .toast.show{display:block}
+</style>
+</head>
+<body>
+  <div class="ibanner">Intern — <span>Projektteam</span></div>
+  <div class="wrap">
+    <header class="cover">
+      <div class="crest">
+        <svg class="hex" viewBox="0 0 100 100"><path d="M28 6 L72 6 L94 50 L72 94 L28 94 L6 50 Z" fill="none" stroke="#23262b" stroke-width="7"/><path d="M40 30 L60 30 L70 50 L60 70 L40 70 L30 50 Z" fill="#e8a317"/></svg>
+        <div><div class="co">Portfolio-Chronik</div><div class="cs">Archimedes Intelligence®</div></div>
+      </div>
+      <h1>Chronik der Einheiten</h1>
+      <p class="lede">Gemeinsamer Stand zu UPH · IPS · N38. Neue Einträge werden vom Kurator geprüft und freigegeben, bevor sie hier erscheinen.</p>
+    </header>
+
+    <div class="controls">
+      <div class="filtrow" id="unitFilter"><span class="flabel">Einheit</span></div>
+      <div class="filtrow" id="catFilter"><span class="flabel">Kategorie</span>
+        <button class="addbtn" onclick="openAdd()">+ Eintrag</button>
+      </div>
+    </div>
+    <div class="hint">Neue Einträge gehen automatisch „Zur Prüfung" an den Kurator und erscheinen erst nach Freigabe.</div>
+
+    <div class="tl" id="timeline"><div class="state">Lade Einträge…</div></div>
+
+    <footer>
+      <div class="fl">Intern · Projektteam</div>
+      <div class="fr">Portfolio-Chronik · Archimedes Intelligence®</div>
+    </footer>
+  </div>
+
+  <div class="ov" id="ov">
+    <div class="modal">
+      <h2>Eintrag vorschlagen</h2>
+      <div class="msub">Geht zur Prüfung an den Kurator. Nur Fakten – keine internen Bewertungen.</div>
+      <div class="fg row2">
+        <div><label>Datum</label><input id="f_date" placeholder="z. B. 28.02.2025 oder Offen"></div>
+        <div><label>Einheit</label><select id="f_unit"><option>UPH</option><option>IPS</option><option>N38</option></select></div>
+      </div>
+      <div class="fg"><label>Titel</label><input id="f_title" placeholder="Kurze Beschreibung des Ereignisses"></div>
+      <div class="fg"><label>Kategorie</label><select id="f_cat">
+        <option value="Genehmigung">Genehmigung</option>
+        <option value="Ablehnung">Ablehnung / Entzug</option>
+        <option value="Vertrag">Vertrag / Vereinbarung</option>
+        <option value="Problem">Problem / Verstoß</option>
+        <option value="Offen">Offen / Ausstehend</option>
+      </select></div>
+      <div class="fg"><label>Details (Fakten, Aktenzeichen, Beteiligte)</label><textarea id="f_text"></textarea></div>
+      <div class="fg"><label>Dein Name</label><input id="f_by" placeholder="Wer trägt ein?"></div>
+      <div class="macts">
+        <button class="btn cancel" onclick="closeModal()">Abbrechen</button>
+        <button class="btn save" id="saveBtn" onclick="submitEntry()">Zur Prüfung senden</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ====== HIER deine Web-App-URL aus Google Apps Script einsetzen (endet auf /exec) ====== */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxj1rmawXPaXZB_TfkxXEmF5-BFtr_wYDio3euFCODLYeGZME-MoPn9PTf_N4-IVrNvSA/exec";
+/* ===================================================================================== */
+
+const CATS={
+  Genehmigung:{c:"#2e7d32",bg:"#e7f2e3"},
+  Ablehnung:{c:"#c0392b",bg:"#fbe9e7"},
+  Vertrag:{c:"#37618e",bg:"#e6eef6"},
+  Problem:{c:"#b26a00",bg:"#fbefd3"},
+  Offen:{c:"#6b6b6b",bg:"#ededed"}
+};
+const UNITS=["UPH","IPS","N38"];
+let entries=[], fUnit="Alle", fCat="alle";
+
+function esc(s){return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),4000);}
+function catMeta(c){return CATS[c]||CATS.Offen;}
+
+async function loadEntries(){
+  const tl=document.getElementById("timeline");
+  if(!SCRIPT_URL||SCRIPT_URL.indexOf("http")!==0){
+    tl.innerHTML='<div class="state">Noch nicht verbunden.<br>Bitte die Web-App-URL oben im Code bei SCRIPT_URL eintragen.</div>';
+    buildFilters();return;
+  }
+  try{
+    const r=await fetch(SCRIPT_URL,{method:"GET"});
+    const j=await r.json();
+    entries=(j.entries||[]);
+    buildFilters();render();
+  }catch(err){
+    tl.innerHTML='<div class="state">Konnte Einträge nicht laden.<br>Prüfe die Freigabe der Web-App (Zugriff: „Jeder").</div>';
+    buildFilters();
+  }
+}
+
+function buildFilters(){
+  const uf=document.getElementById("unitFilter");
+  uf.querySelectorAll(".chip").forEach(c=>c.remove());
+  ["Alle",...UNITS].forEach(u=>{const b=document.createElement("button");
+    b.className="chip"+(u===fUnit?" on":"");b.textContent=u;b.onclick=()=>{fUnit=u;render();refreshChips();};uf.appendChild(b);});
+  const cf=document.getElementById("catFilter");
+  cf.querySelectorAll(".chip").forEach(c=>c.remove());
+  const addb=cf.querySelector(".addbtn");
+  const mk=(key,label,meta)=>{const b=document.createElement("button");
+    b.className="chip cat"+(key===fCat?" on":"");if(meta)b.style.setProperty("--c",meta.c);
+    b.dataset.key=key;b.textContent=label;b.onclick=()=>{fCat=key;render();refreshChips();};cf.insertBefore(b,addb);};
+  mk("alle","Alle",null);
+  Object.keys(CATS).forEach(k=>mk(k,k,CATS[k]));
+}
+function refreshChips(){
+  document.querySelectorAll("#unitFilter .chip").forEach(b=>b.classList.toggle("on",b.textContent===fUnit));
+  document.querySelectorAll("#catFilter .chip").forEach(b=>b.classList.toggle("on",b.dataset.key===fCat));
+}
+function render(){
+  const tl=document.getElementById("timeline");tl.innerHTML="";
+  let list=entries.filter(e=>(fUnit==="Alle"||e.unit===fUnit)&&(fCat==="alle"||e.cat===fCat));
+  if(!list.length){tl.innerHTML='<div class="state">Keine Einträge für diese Auswahl.</div>';return;}
+  list.forEach(e=>{
+    const m=catMeta(e.cat);const it=document.createElement("div");it.className="item";
+    it.style.setProperty("--c",m.c);it.style.setProperty("--cbg",m.bg);
+    it.innerHTML='<span class="dot"></span><div class="card"><div class="top">'+
+      '<span class="date">'+esc(e.date)+'</span>'+
+      '<span class="tag">'+esc(e.cat)+'</span>'+
+      '<span class="unit">'+esc(e.unit)+'</span></div>'+
+      '<h3>'+esc(e.title)+'</h3>'+
+      '<div class="txt">'+esc(e.text)+'</div></div>';
+    tl.appendChild(it);
+  });
+}
+function openAdd(){f_date.value="";f_unit.value=(fUnit!=="Alle"?fUnit:"UPH");f_title.value="";
+  f_cat.value="Genehmigung";f_text.value="";f_by.value="";document.getElementById("ov").classList.add("show");}
+function closeModal(){document.getElementById("ov").classList.remove("show");}
+async function submitEntry(){
+  const payload={date:f_date.value.trim()||"–",unit:f_unit.value,title:f_title.value.trim(),
+    cat:f_cat.value,text:f_text.value.trim(),submittedBy:f_by.value.trim()};
+  if(!payload.title){toast("Bitte einen Titel eingeben.");return;}
+  const btn=document.getElementById("saveBtn");btn.disabled=true;btn.textContent="Senden…";
+  try{
+    await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    closeModal();toast("Danke! Dein Eintrag liegt jetzt zur Prüfung beim Kurator.");
+  }catch(err){toast("Senden fehlgeschlagen – bitte erneut versuchen.");}
+  btn.disabled=false;btn.textContent="Zur Prüfung senden";
+}
+document.getElementById("ov").addEventListener("click",e=>{if(e.target.id==="ov")closeModal();});
+loadEntries();
+</script>
+</body>
+</html>
