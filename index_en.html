@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approval Timeline – Unicorn Park Hattingen / Satkom (EN)</title>
+<style>
+  :root{--bg:#f5f5f2;--card:#fff;--line:#e3e3dd;--text:#23231f;--muted:#6b6b66;}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{padding:20px 16px;border-bottom:1px solid var(--line);background:var(--card);}
+  h1{margin:0;font-size:19px;font-weight:600;}
+  .sub{margin:6px 0 0;color:var(--muted);font-size:14px;max-width:680px;}
+  main{max-width:760px;margin:0 auto;padding:16px;}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0;}
+  button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 14px;}
+  .primary{background:#23231f;color:#fff;border-color:#23231f;}
+  .chip{border-radius:20px;padding:6px 12px;font-size:14px;}
+  .chip.on{background:#23231f;color:#fff;border-color:#23231f;}
+  #catFilter{display:flex;gap:8px;flex-wrap:wrap;flex:1;}
+  .item{display:flex;gap:12px;margin:12px 0;}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--c,#999);margin-top:6px;flex:none;}
+  .card{flex:1;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c,#999);border-radius:8px;padding:12px 14px;}
+  .top{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .tag{background:var(--cbg,#eee);color:var(--c,#555);padding:1px 8px;border-radius:10px;}
+  .card h3{margin:4px 0;font-size:16px;}
+  .txt{font-size:14px;color:#33332f;}
+  .state{color:var(--muted);padding:24px;text-align:center;}
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;}
+  .ov.show{display:flex;}
+  .modal{background:var(--card);border-radius:12px;max-width:520px;width:100%;padding:18px;max-height:90vh;overflow:auto;}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;}
+  input,select,textarea{width:100%;font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 10px;background:#fff;}
+  textarea{min-height:90px;resize:vertical;}
+  .frow{display:flex;gap:10px;}.frow>div{flex:1;}
+  .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;background:#23231f;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;transition:.25s;pointer-events:none;max-width:90%;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<header>
+  <h1>Approval Timeline · Unicorn Park Hattingen / Satkom</h1>
+  <p class="sub">Add facts and comments here. Every entry is sent to the curator for <strong>review and approval</strong> before it becomes part of the confirmed record — nothing appears in the official timeline until it has been approved.</p>
+</header>
+<main>
+  <div class="bar">
+    <div id="catFilter"></div>
+    <button class="primary" onclick="openAdd()">+ Add entry</button>
+  </div>
+  <div id="timeline"><div class="state">Loading…</div></div>
+</main>
+
+<div class="ov" id="ov">
+  <div class="modal">
+    <h3 style="margin:0 0 4px;">Add new entry</h3>
+    <p style="margin:0;color:var(--muted);font-size:13px;">This goes to the curator for review.</p>
+    <div class="frow">
+      <div><label>Date</label><input id="f_date" placeholder="e.g. 28.02.2025"></div>
+      <div><label>Unit</label><select id="f_unit"><option>UPH</option><option>IPS</option><option>N38</option></select></div>
+    </div>
+    <label>Title</label><input id="f_title" placeholder="Short title">
+    <label>Category</label>
+    <select id="f_cat">
+      <option value="Genehmigung">Approval</option>
+      <option value="Ablehnung">Rejection</option>
+      <option value="Vertrag">Contract</option>
+      <option value="Problem">Problem</option>
+      <option value="Offen">Open</option>
+    </select>
+    <label>Details / comment</label><textarea id="f_text" placeholder="Description, reference numbers, parties involved…"></textarea>
+    <label>Your name</label><input id="f_by" placeholder="e.g. Sergei">
+    <div class="actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button class="primary" id="saveBtn" onclick="submitEntry()">Send for review</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* Same web app endpoint and data contract as the German index.html */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxj1rmawXPaXZB_TfkxXEmF5-BFtr_wYDio3euFCODLYeGZME-MoPn9PTf_N4-IVrNvSA/exec";
+
+const CATS = {
+  Genehmigung:{label:"Approval",  c:"#2e7d32", bg:"#e7f2e3"},
+  Ablehnung:  {label:"Rejection", c:"#c0392b", bg:"#fbe9e7"},
+  Vertrag:    {label:"Contract",  c:"#37618e", bg:"#e6eef6"},
+  Problem:    {label:"Problem",   c:"#b26a00", bg:"#fbefd3"},
+  Offen:      {label:"Open",      c:"#6b6b6b", bg:"#ededed"}
+};
+let entries = [], fCat = "alle";
+
+function esc(s){return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),4000);}
+function catMeta(c){return CATS[c]||CATS.Offen;}
+
+async function loadEntries(){
+  const tl=document.getElementById("timeline");
+  try{
+    const r=await fetch(SCRIPT_URL,{method:"GET"});
+    const j=await r.json();
+    entries=(j.entries||[]);
+    buildFilters();render();
+  }catch(err){
+    tl.innerHTML='<div class="state">Could not load entries. Check the web app sharing (access: \u201cAnyone\u201d).</div>';
+    buildFilters();
+  }
+}
+function buildFilters(){
+  const cf=document.getElementById("catFilter");cf.innerHTML="";
+  const mk=(key,label)=>{const b=document.createElement("button");b.className="chip"+(key===fCat?" on":"");b.textContent=label;b.onclick=()=>{fCat=key;render();buildFilters();};cf.appendChild(b);};
+  mk("alle","All");
+  Object.keys(CATS).forEach(k=>mk(k,CATS[k].label));
+}
+function render(){
+  const tl=document.getElementById("timeline");tl.innerHTML="";
+  let list=entries.filter(e=>fCat==="alle"||e.cat===fCat);
+  if(!list.length){tl.innerHTML='<div class="state">No entries for this selection.</div>';return;}
+  list.forEach(e=>{
+    const m=catMeta(e.cat);const it=document.createElement("div");it.className="item";
+    it.style.setProperty("--c",m.c);it.style.setProperty("--cbg",m.bg);
+    it.innerHTML='<span class="dot"></span><div class="card"><div class="top">'+
+      '<span>'+esc(e.date)+'</span><span class="tag">'+esc(m.label)+'</span><span>'+esc(e.unit)+'</span></div>'+
+      '<h3>'+esc(e.title)+'</h3><div class="txt">'+esc(e.text)+'</div></div>';
+    tl.appendChild(it);
+  });
+}
+function openAdd(){
+  f_date.value="";f_unit.value="UPH";f_title.value="";f_cat.value="Genehmigung";f_text.value="";f_by.value="";
+  document.getElementById("ov").classList.add("show");
+}
+function closeModal(){document.getElementById("ov").classList.remove("show");}
+async function submitEntry(){
+  const payload={
+    date:f_date.value.trim()||"\u2013",
+    unit:f_unit.value,
+    title:f_title.value.trim(),
+    cat:f_cat.value,
+    text:f_text.value.trim(),
+    submittedBy:f_by.value.trim()
+  };
+  if(!payload.title){toast("Please enter a title.");return;}
+  const btn=document.getElementById("saveBtn");btn.disabled=true;btn.textContent="Sending\u2026";
+  try{
+    await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    closeModal();toast("Thank you! Your entry has been sent to the curator for review.");
+  }catch(err){
+    toast("Sending failed \u2013 please try again.");
+  }
+  btn.disabled=false;btn.textContent="Send for review";
+}
+document.getElementById("ov").addEventListener("click",e=>{if(e.target.id==="ov")closeModal();});
+loadEntries();
+</script>
+</body>
+</html>
